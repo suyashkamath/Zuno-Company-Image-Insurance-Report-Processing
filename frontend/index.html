@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZUNO Insurance Policy Processing System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="sidebar">
+        <h2 class="text-2xl font-bold mb-6">📁 File Upload</h2>
+        <div class="mb-4">
+            <label for="company-name" class="block text-sm font-medium mb-1">Company Name</label>
+            <input type="text" id="company-name" value="ZUNO" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+        </div>
+        <div class="mb-4">
+            <label for="policy-file" class="block text-sm font-medium mb-1">📄 Upload Policy Image</label>
+            <input type="file" id="policy-file" accept="image/*" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+        </div>
+        <p class="text-sm mb-4 info-message">📊 Formula rules are embedded in the system and will be automatically applied.</p>
+        <button id="process-button" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:bg-gray-400" disabled>🚀 Process Policy File</button>
+    </div>
+
+    <div class="main-content">
+        <h1 class="text-3xl font-bold mb-4">🏢ZUNO Insurance Policy Processing System</h1>
+        <hr class="mb-6 border-gray-300">
+
+        <div id="initial-message" class="info-message">
+            <p>👆 Please upload a policy image to begin processing.</p>
+            <div class="mt-4">
+                <h3 class="text-xl font-semibold">📋 Instructions:</h3>
+                <ul class="list-disc pl-5">
+                    <li><strong>Company Name</strong>: Enter the insurance company name</li>
+                    <li><strong>Policy Image</strong>: Upload the image containing policy data (PNG, JPG, etc.)</li>
+                    <li><strong>Process</strong>: Click the process button to extract data and calculate payouts</li>
+                </ul>
+                <h3 class="text-xl font-semibold mt-4">🎯 Features:</h3>
+                <ul class="list-disc pl-5">
+                    <li><strong>Image Support</strong>: PNG, JPG, JPEG, GIF, BMP, TIFF</li>
+                    <li><strong>AI-Powered Extraction</strong>: Uses GPT-4o for intelligent text extraction via OCR</li>
+                    <li><strong>Enhanced Remarks Extraction</strong>: Automatically detects and extracts vehicle make, age, transaction type, and validity dates</li>
+                    <li><strong>Smart Formula Application</strong>: Uses embedded formula rules for accurate calculations</li>
+                    <li><strong>Excel Export</strong>: Download processed data as formatted Excel file</li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="processing-spinner" class="spinner"></div>
+        <div id="error-message" class="error-message hidden"></div>
+        <div id="success-message" class="success-message hidden"></div>
+
+        <div id="results-container" class="hidden">
+            <div class="flex mb-4 flex-wrap">
+                <button class="tab-button active" data-tab="tab1">📊 Final Results</button>
+                <button class="tab-button" data-tab="tab2">📝 Extracted Text</button>
+                <button class="tab-button" data-tab="tab3">🧾 Parsed Data</button>
+                <button class="tab-button" data-tab="tab4">🧮 Calculated Data</button>
+                <button class="tab-button" data-tab="tab5">📥 Download</button>
+            </div>
+
+            <div id="tab1" class="tab active">
+                <h2 class="text-xl font-semibold mb-4">📊 Final Processed Data</h2>
+                <div class="table-container">
+                    <table id="results-table" class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 p-2">Segment</th>
+                                <th class="border border-gray-300 p-2">Location</th>
+                                <th class="border border-gray-300 p-2">Policy Type</th>
+                                <th class="border border-gray-300 p-2">Payin</th>
+                                <th class="border border-gray-300 p-2">Doable District</th>
+                                <th class="border border-gray-300 p-2">Remarks</th>
+                                <th class="border border-gray-300 p-2">Calculated Payout</th>
+                                <th class="border border-gray-300 p-2">Formula Used</th>
+                                <th class="border border-gray-300 p-2">Rule Explanation</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results-table-body"></tbody>
+                    </table>
+                </div>
+                <div class="grid grid-cols-4 gap-4 mt-4">
+                    <div class="bg-blue-100 p-4 rounded">
+                        <p class="text-sm">Total Records</p>
+                        <p id="total-records" class="text-lg font-bold">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded">
+                        <p class="text-sm">Avg Payin</p>
+                        <p id="avg-payin" class="text-lg font-bold">0.0%</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded">
+                        <p class="text-sm">Unique Segments</p>
+                        <p id="unique-segments" class="text-lg font-bold">0</p>
+                    </div>
+                    <div class="bg-blue-100 p-4 rounded">
+                        <p class="text-sm">Company</p>
+                        <p id="company-name-display" class="text-lg font-bold">Unknown Company</p>
+                    </div>
+                </div>
+                <h2 class="text-xl font-semibold mt-4">🔧 Formula Rules Applied</h2>
+                <ul id="formula-summary" class="list-disc pl-5"></ul>
+            </div>
+
+            <div id="tab2" class="tab">
+                <h2 class="text-xl font-semibold mb-4">📝 Extracted Text from Policy Image</h2>
+                <textarea id="extracted-text" class="w-full h-96 p-2 border border-gray-300 rounded" readonly></textarea>
+                <h2 class="text-xl font-semibold mt-4">📊 Embedded Formula Rules</h2>
+                <div class="table-container">
+                    <table class="w-full border-collapse border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 p-2">LOB</th>
+                                <th class="border border-gray-300 p-2">Segment</th>
+                                <th class="border border-gray-300 p-2">Insurer</th>
+                                <th class="border border-gray-300 p-2">PO</th>
+                                <th class="border border-gray-300 p-2">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody id="formula-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="tab3" class="tab">
+                <h2 class="text-xl font-semibold mb-4">🧾 Parsed Policy Data</h2>
+                <pre id="parsed-data" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+            </div>
+
+            <div id="tab4" class="tab">
+                <h2 class="text-xl font-semibold mb-4">🧮 Calculated Data with Formulas</h2>
+                <pre id="calculated-data" class="bg-gray-100 p-4 rounded overflow-auto max-h-96"></pre>
+                <h2 class="text-xl font-semibold mt-4">🔍 Rule Explanations</h2>
+                <div id="rule-explanations"></div>
+            </div>
+
+            <div id="tab5" class="tab">
+                <h2 class="text-xl font-semibold mb-4">📥 Download Results</h2>
+                <div class="space-y-4">
+                    <button id="download-excel" class="bg-green-600 text-white p-2 rounded hover:bg-green-700">📊 Download Excel File</button>
+                    <button id="download-json" class="bg-green-600 text-white p-2 rounded hover:bg-green-700 ml-2">📄 Download JSON Data</button>
+                    <button id="download-csv" class="bg-green-600 text-white p-2 rounded hover:bg-green-700 ml-2">📋 Download CSV File</button>
+                    <p class="info-message mt-2">💡 The Excel file contains formatted data with company header and calculated payouts.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
